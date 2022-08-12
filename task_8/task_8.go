@@ -14,16 +14,56 @@ func main() {
 		fmt.Printf("Failed to convert input to int64: %s \n", err)
 	}
 
-	bitIndex, err := inputInt64("Bit index to switch (0 is the first) ?")
+	bitIndex, err := inputInt64("Bit index to switch (1 is the first) ?")
 	if err != nil {
 		fmt.Printf("Failed to convert bit index input to int64: %s \n", err)
 	}
+	if bitIndex < 1 || bitIndex > 64 {
+		fmt.Printf("Index should be from 1 to 64: %s \n", err)
+		return
+	}
 
-	fmt.Printf("Value %d in bit format before switch:\n%064b \n", value, uint64(value))
-	changedBitValue := switchBit(value, bitIndex)
-	fmt.Printf("Value %d in bit format after switch:\n%064b \n", changedBitValue, uint64(changedBitValue))
+	// case 1 solution
+	fmt.Println("==========================================CASE 1==========================================")
+	fmt.Printf("Value %d in bit format before switch: %064b \n", value, uint64(value))
+	changedBitValue := switchBitStrSolution(value, bitIndex)
+	if i, err := strconv.ParseInt(changedBitValue, 2, 64); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Printf("Value %d in bit format after switch: %s \n", i, changedBitValue)
+	}
+	fmt.Printf("Apple2Apple comparison : \n%064b \n%s \n", value, changedBitValue)
 
-	fmt.Printf("Apple2Apple comparison : \n%064b \n%064b \n", uint64(value), uint64(changedBitValue))
+	// case 2 solution
+	fmt.Println("==========================================CASE 2==========================================")
+	fmt.Printf("Value %d in bit format before switch: %064b \n", value, uint64(value))
+	changedBitValue2 := switchBit(value, bitIndex)
+	fmt.Printf("Value %d in bit format after switch: %s \n", changedBitValue2, changedBitValue)
+	fmt.Printf("Apple2Apple comparison : \n%064b \n%064b \n", value, changedBitValue2)
+}
+
+/*
+	SOLUTION 1 - to string convert
+*/
+func switchBitStrSolution(val int64, position int64) string {
+	// Only need it to detect bit Index to change !
+	toBitStr := fmt.Sprintf("%064b", val)
+	fmt.Printf("[Convert bit number to string format]: %s \n", toBitStr)
+
+	bitsSlice := strings.Split(toBitStr, "")
+	fmt.Printf("[Convert string to slice]: %v \n", bitsSlice)
+
+	// switch bit by index
+	if bitsSlice[int64(len(bitsSlice))-position] == "0" {
+		bitsSlice[int64(len(bitsSlice))-position] = "1"
+	} else {
+		bitsSlice[int64(len(bitsSlice))-position] = "0"
+	}
+	// join slice back to string
+	res := strings.Join(bitsSlice, "")
+	fmt.Printf("[After joining back to string] %v\n", res)
+
+	return res
 }
 
 /*
@@ -34,23 +74,24 @@ If the value cannot be represented by a signed integer of the size given by bitS
  https://stackoverflow.com/questions/50815512/when-casting-an-int64-to-uint64-is-the-sign-retained
 */
 func switchBit(val int64, position int64) int64 {
-	toBit := uint64(val)          //
-	mask := uint64(1 << position) // make left shift to make 1 on index position
-	fmt.Printf("MASK VALUE: %d \n", mask)
-	//fmt.Printf("DIT VALUE: %064b \n", toBit)
+	toBit := uint64(val)
+	// need to check what bit 0 or 1 is onr position
+	toBitStr := fmt.Sprintf("%064b", val)
+	fmt.Printf("[Convert bit number to string format]: %s \n", toBitStr)
+	bitsSlice := strings.Split(toBitStr, "")
+	fmt.Printf("[Convert string to slice]: %v \n", bitsSlice)
 
-	// Only need it to detect bit Index to change !
-	toBitStr := fmt.Sprintf("%064b", toBit)
-	//fmt.Printf("toBitStr : %s \n", toBitStr)
+	mask := uint64(1 << position) // make left shift to make 1 on index position
+	fmt.Printf("[MASK FOR CHOSEN POSITION CONVERT]: %b \n", mask)
 
 	// Make bit operations in DECIMAL representation
-	if toBitStr[int64(len(toBitStr))-position-1] == '0' {
-		val := toBit &^ mask
-		fmt.Sprintf("%064b", val)
+	if bitsSlice[int64(len(toBitStr))-position-1] == "0" {
+		// val := toBit &^ mask
+		// fmt.Sprintf("%064b", val)
 		//return int64(val)
 		return int64(toBit | mask)
 	} else {
-		return int64(toBit | mask)
+		return int64(toBit &^ mask)
 	}
 }
 
